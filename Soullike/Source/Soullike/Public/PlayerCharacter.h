@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
+class USpringArmComponent;
+class UCameraComponent;
+
 UCLASS()
 class SOULLIKE_API APlayerCharacter : public ACharacter
 {
@@ -18,6 +21,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<USpringArmComponent> CameraBoom;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
+	TObjectPtr<UCameraComponent> FollowCamera;
 
 public:	
 	// Called every frame

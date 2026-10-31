@@ -8,6 +8,8 @@
 
 struct FItemInstanceData;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangeItem);
+
 UCLASS(ClassGroup = (Inventory), meta = (BlueprintSpawnableComponent))
 class SOULLIKE_API UInventoryComponent : public UActorComponent
 {
@@ -22,9 +24,17 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Inventory")
+	TArray<FItemInstanceData> Items;
+
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FOnChangeItem OnChangeItem;
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void TryAddItem(const FItemInstanceData& Item);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void TryUseItem(const FItemInstanceData& Item);
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void TryRemoveItem(const FItemInstanceData& Item);

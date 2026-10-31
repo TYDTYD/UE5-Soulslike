@@ -16,4 +16,9 @@ struct SOULLIKE_API FItemInstanceData
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Item")
     int32 Quantity = 1;
+
+    bool operator==(const FItemInstanceData& Other) const
+	{
+		return InstanceId == Other.InstanceId && DefinitionId == Other.DefinitionId;
+	}
 };

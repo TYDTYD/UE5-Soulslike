@@ -57,13 +57,13 @@ void UInventoryComponent::TryUseItem(const FItemInstanceData& Item)
 	// TODO : 아이템 검증 로직 추가 -> 서버쪽으로 이전 예정
 	for (FItemInstanceData& ItemInstance : Items)
 	{
-		if (ItemInstance.DefinitionId == Item.DefinitionId)
+		if (ItemInstance.DefinitionId == Item.DefinitionId && ItemInstance.InstanceId == Item.InstanceId)
 		{
-			if (ItemInstance.Quantity > 0) 
+			if (ItemInstance.Quantity >= Item.Quantity)
 			{
 				ItemInstance.Quantity -= Item.Quantity;
 				result = true;
-			}				
+			}
 			break;
 		}
 	}

@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "ItemInstanceData.h"
 #include "InventoryComponent.generated.h"
-
-struct FItemInstanceData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnChangeItem);
 
@@ -31,7 +30,7 @@ public:
 	FOnChangeItem OnChangeItem;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void TryAddItem(const FItemInstanceData& Item);
+	bool TryAddItem(const FItemInstanceData& Item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	void TryUseItem(const FItemInstanceData& Item);

@@ -18,23 +18,34 @@ void UInventoryComponent::BeginPlay()
 }
 
 // todo : 반환 결과 리턴하기 -> 로직 성공했는 지 아닌 지
-void UInventoryComponent::TryAddItem(const FItemInstanceData& Item)
+bool UInventoryComponent::TryAddItem(const FItemInstanceData& Item)
 {
 	if (Item.Quantity <= 0)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item quantity is zero or less. Can't add Item!"));
-		return;
+		return false;
 	}	
 
 	if (Item.DefinitionId == NAME_None)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Item DefinitionId is None. Can't add Item!"));
-		return;
+		return false;
 	}
 
 	// TODO : 아이템 검증 로직 추가	-> 서버쪽으로 이전 예정
-	Items.Add(Item);
+	FItemInstanceData NewItem = Item;
+	if (!NewItem.InstanceId.IsValid())
+		NewItem.InstanceId = FGuid::NewGuid();
+
+	if (Items.ContainsByPredicate([&NewItem](const FItemInstanceData& Existing)
+		{ 
+			return Existing.InstanceId == NewItem.InstanceId; 
+		}))
+		return false;
+
+	Items.Add(NewItem);
 	OnChangeItem.Broadcast();
+	return true;
 }
 
 // todo : 반환 결과 리턴하기 -> 로직 성공했는 지 아닌 지
@@ -62,6 +73,10 @@ void UInventoryComponent::TryUseItem(const FItemInstanceData& Item)
 			if (ItemInstance.Quantity >= Item.Quantity)
 			{
 				ItemInstance.Quantity -= Item.Quantity;
+				if (ItemInstance.Quantity <= 0)
+				{
+					Items.Remove(ItemInstance);
+				}
 				result = true;
 			}
 			break;
@@ -84,7 +99,9 @@ void UInventoryComponent::TryRemoveItem(const FItemInstanceData& Item)
 	}
 
 	// TODO : 아이템 검증 로직 추가 -> 서버쪽으로 이전 예정
-	Items.Remove(Item);
-	OnChangeItem.Broadcast();
+	if (Items.Remove(Item))
+	{
+		OnChangeItem.Broadcast();
+	}
 }
 

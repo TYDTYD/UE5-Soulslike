@@ -10,12 +10,25 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerController.h"
 #include "InputActionValue.h"
+#include "InteractionComponent.h"
+#include "InventoryComponent.h"
+#include "Components/SphereComponent.h"
 
 // Sets default values
 APlayerCharacter::APlayerCharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	PlayerInventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("PlayerInventoryComponent"));
+	PlayerInteractionComponent = CreateDefaultSubobject<UInteractionComponent>(TEXT("PlayerInteractionComponent"));
+	ItemSearchSphere = CreateDefaultSubobject<USphereComponent>(TEXT("ItemSearchSphere"));
+	ItemSearchSphere->SetupAttachment(RootComponent);
+	// Preserve the existing BP sphere's radius and local offset.
+	ItemSearchSphere->InitSphereRadius(50.f);
+	ItemSearchSphere->SetRelativeLocation(FVector(60.f, 0.f, -60.f));
+	// InteractionComponent performs explicit overlap queries using this volume.
+	ItemSearchSphere->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ItemSearchSphere->SetGenerateOverlapEvents(false);
 	bUseControllerRotationYaw = false;
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
@@ -38,7 +51,8 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	if (IsValid(PlayerInteractionComponent) && IsValid(ItemSearchSphere))
+		PlayerInteractionComponent->InitializeInteraction(ItemSearchSphere);
 }
 
 // Called every frame
@@ -67,6 +81,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 			Input->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 			Input->BindAction(JumpAction, ETriggerEvent::Canceled, this, &ACharacter::StopJumping);
 		}
+		if (InteractionAction)
+			Input->BindAction(InteractionAction, ETriggerEvent::Started, this, &APlayerCharacter::Interact);
 	}
 }
 
@@ -111,3 +127,11 @@ void APlayerCharacter::Look(const FInputActionValue& Value)
 	AddControllerPitchInput(LookAxis.Y);
 }
 
+void APlayerCharacter::Interact()
+{
+	if (!Controller)
+		return;
+
+	if (IsValid(PlayerInteractionComponent))
+		PlayerInteractionComponent->TryInteract();
+}
